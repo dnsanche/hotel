@@ -18,27 +18,32 @@ describe "Manager class" do
 
     it "raises argument error for invalid dates" do
       proc {
-       @manager.reserve_room("02/12/2019", "01/12/2019")
+       @manager.reserve_room(Date.new(2019, 12, 5), Date.new(2019, 12, 1))
       }.must_raise ArgumentError
     end
 
     it "creates a reservation" do 
-      reservation = @manager.reserve_room("01/12/2019", "03/12/2019")
+      reservation = @manager.reserve_room(Date.new(2019, 12, 1), Date.new(2019, 12, 3))
       reservation.must_be_kind_of HotelBooking::Reservation
     end
 
     it "gets cost by reservation id" do 
-      reservation = @manager.reserve_room("01/12/2019", "03/12/2019")
+      @manager.reserve_room(Date.new(2019, 12, 1), Date.new(2019, 12, 3))
       expect @manager.get_cost(1).must_equal 400
     end
 
+    it "gets reservation by date" do 
+      reservation = @manager.reserve_room(Date.new(2019, 12, 1), Date.new(2019, 12, 2))
+      reservation2 = @manager.reserve_room(Date.new(2019, 12, 1), Date.new(2019, 12, 3))
+      expect @manager.get_reservation_by_date(Date.new(2019, 11, 30)).must_equal []
+      expect @manager.get_reservation_by_date(Date.new(2019, 12, 1))[0].must_equal reservation
+      expect @manager.get_reservation_by_date(Date.new(2019, 12, 1))[1].must_equal reservation2
+      expect @manager.get_reservation_by_date(Date.new(2019, 12, 1)).length.must_equal 2
+      expect @manager.get_reservation_by_date(Date.new(2019, 12, 2))[0].must_equal reservation2
+      expect @manager.get_reservation_by_date(Date.new(2019, 12, 2)).length.must_equal 1
+      expect @manager.get_reservation_by_date(Date.new(2019, 12, 3)).must_equal []
+    end
 
-    # it "is gives total cost" do
-    #   reservation = HotelBooking::Reservation.new("01/12/2019", "03/12/2019")
-    #   reservation.cost.must_equal 400
-    #   reservation.id.must_equal 1
-    #   reservation.room.must_equal 1
-    # end
 
 
   end
