@@ -77,8 +77,14 @@ describe "Manager class" do
       proc {
         @manager.reserve_room(Date.new(2019, 11, 10 ), Date.new(2019, 11, 13))
        }.must_raise ArgumentError
-
       
     end
+
+    it "reserves a block of rooms" do
+     @manager.reserve_block(Date.new(2019, 12, 1), Date.new(2019, 12, 2), 3, 150)
+    end
+
+
+
   end
 end
