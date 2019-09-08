@@ -19,20 +19,25 @@ module HotelBooking
     def list_rooms
       return @rooms
     end
-    
+
+
     def reserve_room(check_in , check_out)  
+      validate_dates(check_in, check_out)
+      room = get_room(check_in , check_out)  
       id = get_next_id
-      room = get_available_room(check_in , check_out)
       cost = ((check_out - check_in).to_i) * COST
       reservation = Reservation.new(check_in, check_out, id, room, cost) 
-      @reservation_by_id.store(id,reservation)
       (check_in...check_out).each do |date|
         if @reservations_by_date.has_key?(date) == false
           reservations = []
           reservations << reservation
           @reservations_by_date.store(date, reservations)
+          @reservation_by_id.store(id,reservation)
         else
-          @reservations_by_date[date] << reservation
+          if @reservations_by_date[date].count <= 20 
+            @reservations_by_date[date] << reservation
+            @reservation_by_id.store(id,reservation)
+          end
         end
       end
       return reservation
@@ -50,24 +55,49 @@ module HotelBooking
     def get_cost(id)
       return @reservation_by_id[id].cost 
     end
+
+    def available_rooms(check_in, check_out)  
+      available_rooms = Array.new(20, true)
+      (check_in...check_out).each do |date|
+        if @reservations_by_date[date] != nil
+          @reservations_by_date[date].each do |reservation|
+            available_rooms[reservation.room - 1] = false
+          end
+        end
+      end  
+      available_rooms = available_rooms.each_index.select { |index| available_rooms[index] == true} 
+      available_rooms.map! do |index|
+        index + 1
+      end 
+      return available_rooms
+    end
       
   private
     def get_next_id
       return  @id += 1
     end
-
-    def get_available_room(check_in, check_out)
-      return  @rooms.first
+    
+    def validate_dates(check_in, check_out)
+      unless check_out > check_in
+        raise ArgumentError.new("Invalid dates") 
+      end
     end
 
+    def get_room(check_in, check_out)  
+      available_rooms = Array.new(20, true)
+      (check_in...check_out).each do |date|
+        if @reservations_by_date[date] != nil
+          @reservations_by_date[date].each do |reservation|
+            available_rooms[reservation.room - 1] = false
+          end
+        end
+      end  
+
+      if available_rooms.include?(true) == true
+        return available_rooms.index(true) + 1
+      else 
+        raise ArgumentError.new("No available room")
+      end 
+    end
   end
 end
-
-
-
-
-
-
-
-
-
