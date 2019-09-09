@@ -22,32 +22,6 @@ module HotelBooking
       return @rooms
     end
 
-
-    def create_block(check_in , check_out, num_rooms, discounted_rate)
-      validate_dates(check_in, check_out)
-      validate_less_6_rooms(num_rooms)
-
-      if available_rooms(check_in, check_out).count >= num_rooms
-        rooms = []
-        num_rooms.times do |index|
-          rooms << available_rooms(check_in, check_out)[index]
-        end
-      else
-        raise ArgumentError.new("No available room")
-      end
-      block = Block.new(check_in, check_out, rooms, discounted_rate)
-      (check_in...check_out).each do |date|
-        if @blocks_by_date.has_key?(date) == false
-          blocks = []
-          blocks << block
-          @blocks_by_date.store(date, blocks)
-        else
-          @blocks_by_date[date] << block
-        end
-      end
-      return block
-    end
-
     def reserve_room(check_in , check_out)  
       validate_dates(check_in, check_out)
       room = available_rooms(check_in, check_out).first   
@@ -107,7 +81,42 @@ module HotelBooking
       end 
       return available_rooms
     end
-  
+
+    def get_rooms_in_block(check_in, check_out)
+      if @blocks_by_date[check_in] != nil
+        @blocks_by_date[check_in].each do |block|
+          block.rooms
+        end
+      else
+         raise ArgumentError.new("Invalid block")
+      end
+    end
+
+    def create_block(check_in , check_out, num_rooms, discounted_rate)
+      validate_dates(check_in, check_out)
+      validate_less_6_rooms(num_rooms)
+
+      if available_rooms(check_in, check_out).count >= num_rooms
+        rooms = []
+        num_rooms.times do |index|
+          rooms << available_rooms(check_in, check_out)[index]
+        end
+      else
+        raise ArgumentError.new("No available room")
+      end
+      block = Block.new(check_in, check_out, rooms, discounted_rate)
+      (check_in...check_out).each do |date|
+        if @blocks_by_date.has_key?(date) == false
+          blocks = []
+          blocks << block
+          @blocks_by_date.store(date, blocks)
+        else
+          @blocks_by_date[date] << block
+        end
+      end
+      return block
+    end
+
   private
     def get_next_id
       return  @id += 1

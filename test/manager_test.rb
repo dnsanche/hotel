@@ -95,5 +95,12 @@ describe "Manager class" do
        }.must_raise ArgumentError   
     end
 
+    it "shows rooms in a block" do
+      @manager.create_block(Date.new(2019, 12, 1), Date.new(2019, 12, 3), 3, 150)  
+      @manager.create_block(Date.new(2019, 12, 1), Date.new(2019, 12, 3), 5, 150)  
+      @manager.get_rooms_in_block(Date.new(2019, 12, 1), Date.new(2019, 12, 3))[0].rooms.must_equal [1,2,3]
+      @manager.get_rooms_in_block(Date.new(2019, 12, 1), Date.new(2019, 12, 3))[1].rooms.must_equal [4,5,6,7,8]
+    end
+
   end
 end
