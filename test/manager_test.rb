@@ -56,12 +56,6 @@ describe "Manager class" do
     end
 
     it "shows available rooms for a given date range" do
-      20.times do |reservation|
-        @manager.reserve_room(Date.new(2019, 11, 10 ), Date.new(2019, 11, 13))
-      end
-      expect @manager.available_rooms(Date.new(2019, 11, 9), Date.new(2019, 11, 14)).must_equal []
-      expect @manager.available_rooms(Date.new(2019, 11, 9), Date.new(2019, 11, 14)).must_equal []
-
       @manager.reserve_room(Date.new(2019, 12, 1), Date.new(2019, 12, 2))
       @manager.reserve_room(Date.new(2019, 12, 1), Date.new(2019, 12, 3))
       @manager.reserve_room(Date.new(2019, 12, 1), Date.new(2019, 12, 4))
@@ -76,15 +70,30 @@ describe "Manager class" do
 
       proc {
         @manager.reserve_room(Date.new(2019, 11, 10 ), Date.new(2019, 11, 13))
-       }.must_raise ArgumentError
-      
+       }.must_raise ArgumentError   
     end
 
-    it "reserves a block of rooms" do
-     @manager.reserve_block(Date.new(2019, 12, 1), Date.new(2019, 12, 2), 3, 150)
+    it "creates a block of rooms" do
+      @manager.create_block(Date.new(2019, 12, 1), Date.new(2019, 12, 3), 3, 150)  
+      @manager.available_rooms(Date.new(2019, 12, 1), Date.new(2019, 12, 3)).count.must_equal 17
+      @manager.available_rooms(Date.new(2019, 11, 29), Date.new(2019, 12, 2)).count.must_equal 17 
+      @manager.available_rooms(Date.new(2019, 12, 3), Date.new(2019, 12, 4)).count.must_equal 20
     end
 
+    it "raises an error for more than 5 rooms in a block" do
+      proc {
+        @manager.create_block(Date.new(2019, 12, 1), Date.new(2019, 12, 3), 6, 150)
+       }.must_raise ArgumentError   
+    end
 
+    it "raises error if there aren't enough rooms available for a block" do
+      16.times do |reservation|
+        @manager.reserve_room(Date.new(2019, 11, 10 ), Date.new(2019, 11, 13))
+      end
+      proc {
+        @manager.create_block(Date.new(2019, 11, 10), Date.new(2019, 11, 13), 5, 150)
+       }.must_raise ArgumentError   
+    end
 
   end
 end
